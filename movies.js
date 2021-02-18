@@ -17,10 +17,19 @@ window.addEventListener('DOMContentLoaded', async function(event) {
   // movies. Write the contents of this array to the JavaScript
   // console to ensure you've got good data
   // ⬇️ ⬇️ ⬇️
+apiKey = '3a897755f1e040eb6b9883e118692d50'
+url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${apiKey}&language=en-US`
 
+let response = await fetch(url)
+
+let movies = await response.json()
+
+console.log(movies)
+
+console.log(movies.results)
   // ⬆️ ⬆️ ⬆️ 
   // End Step 1
-  
+
   // Step 2: 
   // - Loop through the Array called movies and insert HTML
   //   into the existing DOM element with the class name .movies
@@ -33,7 +42,27 @@ window.addEventListener('DOMContentLoaded', async function(event) {
   //   <a href="#" class="watched-button block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">I've watched this!</a>
   // </div>
   // ⬇️ ⬇️ ⬇️
+  let movieHTML = document.querySelector('.movies')
+  for (let i = 0; i < movies.results.length; i++) {
+  let movie = movies.results[i]
+  let posterPath = movie.poster_path
+  let movieId = movie.id
+  
+  movieHTML.insertAdjacentHTML('beforeend', `
+    <div class="w-1/5 p-4 movie-${movieId}">
+      <img src="https://image.tmdb.org/t/p/w500//${posterPath}" class="w-full">
+      <a href="#" class="watched-button-${movieId} block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">I've watched this!</a>
+    </div>`
+  )
 
+  let movieClass = document.querySelector(`.watched-button-${movieId}`) 
+  
+  movieClass.addEventListener('click', async function(event) {
+    event.preventDefault()
+    movieClass.classList.add('opacity-20')
+    console.log(`${movies.results[i].original_title} was watched.`)
+  })
+}
   // ⬆️ ⬆️ ⬆️ 
   // End Step 2
 
