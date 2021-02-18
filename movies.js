@@ -10,7 +10,6 @@
 // Note: image data returned by the API will only give you the filename;
 // prepend with `https://image.tmdb.org/t/p/w500/` to get the 
 // complete image URL
-
 window.addEventListener('DOMContentLoaded', async function(event) {
   // Step 1: Construct a URL to get movies playing now from TMDB, fetch
   // data and put the Array of movie Objects in a variable called
@@ -27,6 +26,24 @@ let movies = await response.json()
 console.log(movies)
 
 console.log(movies.results)
+
+let db = firebase.firestore()
+let watchedMovies = await db.collection('watchedMovies').get()
+let watchedList = watchedMovies.docs
+let watchedArray = []
+
+console.log(watchedList)
+
+for (let j = 0; j < watchedList.length; j++) {
+  let watchedData = watchedList[j].data()
+  let watchedId = watchedData.movieId
+  console.log(watchedId)
+  watchedArray.push(watchedId)
+}
+// let watchedMovies = querySnapshot.docs
+
+//console.log(watchedList.data())
+
   // ⬆️ ⬆️ ⬆️ 
   // End Step 1
 
@@ -48,12 +65,22 @@ console.log(movies.results)
   let posterPath = movie.poster_path
   let movieId = movie.id
   
+if (watchedArray.includes(movieId)) {
+  movieHTML.insertAdjacentHTML('beforeend', `
+  <div class="w-1/5 p-4 movie-${movieId}">
+    <img src="https://image.tmdb.org/t/p/w500//${posterPath}" class="w-full">
+    <a href="#" class="watched-button-${movieId} opacity-20 block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">I've watched this!</a>
+  </div>`
+) 
+}
+else {
   movieHTML.insertAdjacentHTML('beforeend', `
     <div class="w-1/5 p-4 movie-${movieId}">
       <img src="https://image.tmdb.org/t/p/w500//${posterPath}" class="w-full">
       <a href="#" class="watched-button-${movieId} block text-center text-white bg-green-500 mt-4 px-4 py-2 rounded">I've watched this!</a>
     </div>`
   )
+}
 
   let movieClass = document.querySelector(`.watched-button-${movieId}`) 
   
@@ -61,6 +88,7 @@ console.log(movies.results)
     event.preventDefault()
     movieClass.classList.add('opacity-20')
     console.log(`${movies.results[i].original_title} was watched.`)
+    await db.collection('watchedMovies').add({movieId: movieId})
   })
 }
   // ⬆️ ⬆️ ⬆️ 
@@ -81,6 +109,8 @@ console.log(movies.results)
   // ⬆️ ⬆️ ⬆️ 
   // End Step 3
 
+
+  
   // Step 4: 
   // - Properly configure Firebase and Firebase Cloud Firestore
   // - Inside your "watched button" event listener, you wrote in
